@@ -2,7 +2,9 @@
 
 Jazz chord fretboard viewer. Enter a chord name and see all positions across a 22-fret guitar in either degree or note notation.
 
-Live: https://cortyuming.github.io/guitar-chord-viewer/
+## demo site
+
+https://cortyuming.github.io/guitar-chord-viewer/
 
 ## Features
 
