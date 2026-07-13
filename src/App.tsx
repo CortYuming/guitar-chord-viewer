@@ -195,17 +195,6 @@ function App() {
         </div>
       )}
 
-      {chord && (
-        <div className="fretboard-wrap">
-          <Fretboard
-            chord={chord}
-            mode={mode}
-            fromFret={fromFret}
-            toFret={toFret}
-          />
-        </div>
-      )}
-
       <div className="notation-toggle-row">
         <div className="notation-toggle" role="group" aria-label="Notation">
           <button
@@ -222,6 +211,17 @@ function App() {
           </button>
         </div>
       </div>
+
+      {chord && (
+        <div className="fretboard-wrap">
+          <Fretboard
+            chord={chord}
+            mode={mode}
+            fromFret={fromFret}
+            toFret={toFret}
+          />
+        </div>
+      )}
 
       <div className="legend">
         <span className="legend-title">Degrees</span>

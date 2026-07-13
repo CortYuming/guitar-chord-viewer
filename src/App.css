@@ -194,8 +194,8 @@ body {
   overflow: hidden;
 }
 .notation-toggle button {
-  padding: 9px 14px;
-  font-size: 13px;
+  padding: 4px 10px;
+  font-size: 11px;
   background: transparent;
   color: var(--muted);
   border: 0;
