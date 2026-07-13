@@ -83,6 +83,17 @@ describe('parseChord', () => {
     expect(c.tones).toEqual([0, 3, 6, 9]);
   });
 
+  it('parses Bb°7 same as Bb dim7', () => {
+    const a = parseChord('Bb°7')!;
+    const b = parseChord('Bbdim7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses C° as diminished triad', () => {
+    const c = parseChord('C°')!;
+    expect(c.tones).toEqual([0, 3, 6]);
+  });
+
   it('parses Csus4', () => {
     const c = parseChord('Csus4')!;
     expect(c.root).toBe(0);
