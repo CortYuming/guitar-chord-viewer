@@ -7,7 +7,12 @@ import {
   normalizeToASCII,
 } from './chord';
 import { Fretboard, type NotationMode } from './components/Fretboard';
-import { readURLState, useURLSync } from './hooks/useURLSync';
+import {
+  readURLState,
+  useURLSync,
+  EMPTY_MARKERS,
+  type Markers,
+} from './hooks/useURLSync';
 import { useMRU } from './hooks/useMRU';
 
 function App() {
@@ -16,6 +21,9 @@ function App() {
   const [mode, setMode] = useState<NotationMode>(urlState.mode ?? 'number');
   const [fromFret, setFromFret] = useState<number>(urlState.fromFret ?? 0);
   const [toFret, setToFret] = useState<number>(urlState.toFret ?? 15);
+  const [markers, setMarkers] = useState<Markers>(
+    urlState.markers ?? [...EMPTY_MARKERS],
+  );
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [copyLabel, setCopyLabel] = useState('🔗 URL');
   const [copyMdLabel, setCopyMdLabel] = useState('📝 MD');
@@ -39,6 +47,7 @@ function App() {
     mode,
     fromFret,
     toFret,
+    markers,
   });
 
   const summary = chord ? chordSummary(chord) : null;
@@ -97,6 +106,18 @@ function App() {
   const handleInputCommit = () => {
     if (chord) pushMRU(chord.label);
   };
+
+  const handleMarkerToggle = (stringIdx: number, fret: number) => {
+    setMarkers((prev) => {
+      const next = [...prev];
+      next[stringIdx] = prev[stringIdx] === fret ? null : fret;
+      return next;
+    });
+  };
+
+  const handleClearMarkers = () => setMarkers([...EMPTY_MARKERS]);
+
+  const hasAnyMarker = markers.some((m) => m !== null);
 
   const normNow = normalizeToASCII(input);
 
@@ -234,6 +255,16 @@ function App() {
             Notes
           </button>
         </div>
+        {hasAnyMarker && (
+          <button
+            className="picks-clear"
+            onClick={handleClearMarkers}
+            title="Clear all picks"
+            type="button"
+          >
+            Clear picks
+          </button>
+        )}
       </div>
 
       {chord && (
@@ -243,6 +274,8 @@ function App() {
             mode={mode}
             fromFret={fromFret}
             toFret={toFret}
+            markers={markers}
+            onMarkerToggle={handleMarkerToggle}
           />
         </div>
       )}

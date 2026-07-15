@@ -6,6 +6,7 @@ import {
   FRET_MARKERS,
   noteLabel,
 } from '../chord';
+import type { Markers } from '../hooks/useURLSync';
 
 export type NotationMode = 'number' | 'note';
 
@@ -14,9 +15,18 @@ interface Props {
   mode: NotationMode;
   fromFret: number;
   toFret: number;
+  markers: Markers;
+  onMarkerToggle: (stringIdx: number, fret: number) => void;
 }
 
-export function Fretboard({ chord, mode, fromFret, toFret }: Props) {
+export function Fretboard({
+  chord,
+  mode,
+  fromFret,
+  toFret,
+  markers,
+  onMarkerToggle,
+}: Props) {
   const from = Math.max(0, Math.min(22, fromFret));
   const to = Math.max(from, Math.min(22, toFret));
   const numCols = to - from + 1;
@@ -50,12 +60,28 @@ export function Fretboard({ chord, mode, fromFret, toFret }: Props) {
       const isChordTone = toneSet.has(interval);
       const label =
         mode === 'number' ? CHROMATIC_LABELS[interval] : noteLabel(semi);
+      const isMarked = markers[s] === f;
       let cls = `cell note-cell int-${interval}`;
       if (f === 0) cls += ' open';
       cls += isChordTone ? ' chord-tone' : ' non-chord';
       if (label.length > 2) cls += ' wide-label';
+      if (isMarked) cls += ' marked';
       noteRows.push(
-        <div className={cls} key={`n-${s}-${f}`}>
+        <div
+          className={cls}
+          key={`n-${s}-${f}`}
+          role="button"
+          tabIndex={0}
+          aria-pressed={isMarked}
+          aria-label={`String ${s + 1}, fret ${f}, ${label}${isMarked ? ', marked' : ''}`}
+          onClick={() => onMarkerToggle(s, f)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onMarkerToggle(s, f);
+            }
+          }}
+        >
           <span>{label}</span>
         </div>,
       );
