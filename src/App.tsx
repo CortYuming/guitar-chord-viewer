@@ -18,6 +18,7 @@ function App() {
   const [toFret, setToFret] = useState<number>(urlState.toFret ?? 15);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [copyLabel, setCopyLabel] = useState('🔗 URL');
+  const [copyMdLabel, setCopyMdLabel] = useState('📝 MD');
 
   const { mru, push: pushMRU, remove: removeMRU, clear: clearMRU } = useMRU();
 
@@ -62,6 +63,22 @@ function App() {
       .catch(() => {
         setCopyLabel('(failed)');
         setTimeout(() => setCopyLabel('🔗 URL'), 1400);
+      });
+  };
+
+  const handleCopyMarkdown = () => {
+    const url = window.location.href;
+    const label = chord?.label ?? input;
+    const md = `[${label}](${url})`;
+    navigator.clipboard
+      ?.writeText(md)
+      .then(() => {
+        setCopyMdLabel('✓ Copied');
+        setTimeout(() => setCopyMdLabel('📝 MD'), 1400);
+      })
+      .catch(() => {
+        setCopyMdLabel('(failed)');
+        setTimeout(() => setCopyMdLabel('📝 MD'), 1400);
       });
   };
 
@@ -125,6 +142,13 @@ function App() {
           </div>
           <button className="icon-btn" onClick={handleCopyURL} title="Copy URL">
             {copyLabel}
+          </button>
+          <button
+            className="icon-btn"
+            onClick={handleCopyMarkdown}
+            title="Copy Markdown link"
+          >
+            {copyMdLabel}
           </button>
           <button
             className="icon-btn"
