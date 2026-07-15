@@ -14,7 +14,7 @@ function App() {
   const urlState = useRef(readURLState()).current;
   const [input, setInput] = useState<string>(urlState.chord ?? 'F7+5+9');
   const [mode, setMode] = useState<NotationMode>(urlState.mode ?? 'number');
-  const [fromFret, setFromFret] = useState<number>(urlState.fromFret ?? 1);
+  const [fromFret, setFromFret] = useState<number>(urlState.fromFret ?? 0);
   const [toFret, setToFret] = useState<number>(urlState.toFret ?? 15);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [copyLabel, setCopyLabel] = useState('🔗 URL');
