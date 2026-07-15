@@ -234,13 +234,7 @@ function App() {
 
       <div className="footer-note">
         <div>
-          URL syncs <code>c</code> (chord), <code>n</code> (notation),{' '}
-          <code>f</code> (fret range). Input accepts{' '}
-          <code>♯</code>/<code>#</code>/<code>+</code> and <code>♭</code>/
-          <code>b</code> — normalized to ASCII in the URL.
-        </div>
-        <div style={{ marginTop: 8 }}>
-          Standard tuning EADGBE. 1st string (High E) on top, 6th string (Low E) on bottom.
+          Click any cell to mark a fingering; use <strong>Clear picks</strong> to remove.
         </div>
       </div>
     </>
