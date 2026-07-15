@@ -1,5 +1,5 @@
 export const CHROMATIC_LABELS = [
-  'R', 'b9', '9', 'm3', '3', '4', 'b5', '5', 'b6', '6', 'm7', 'Δ7',
+  'R', 'b9', '9', 'm3', '3', '4', 'b5', '5', 'b6', '6', '7', 'Δ7',
 ] as const;
 
 export const LEGEND_LABELS = [
