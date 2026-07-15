@@ -15,7 +15,7 @@ export interface URLState {
 export const DEFAULT_CHORD = 'F7+5+9';
 export const DEFAULT_MODE: NotationMode = 'number';
 export const DEFAULT_FROM_FRET = 0;
-export const DEFAULT_TO_FRET = 15;
+export const DEFAULT_TO_FRET = 17;
 export const EMPTY_MARKERS: Markers = [null, null, null, null, null, null];
 
 export function readURLState(): Partial<URLState> {

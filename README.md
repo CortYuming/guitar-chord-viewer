@@ -10,10 +10,10 @@ https://cortyuming.github.io/guitar-chord-viewer/
 
 - Flexible chord input (`♯`/`#`/`+` and `♭`/`b` all accepted)
 - Standard EADGBE tuning, up to 22 frets
-- Configurable fret range (default 0–15)
+- Configurable fret range (default 0–17)
 - Click any cell to mark a fingering (one per string) — persisted to URL for sharing
 - Toggle between degree (`R`, `b9`, `9`, `m3`, ..., `7`, `Δ7`) and note name (`C`, `C♯/D♭`, ...) display
-- URL parameters for bookmarking: `?c=F7+5+9&n=number&f=0-15&m=3.2.0..1.`
+- URL parameters for bookmarking: `?c=Am7&f=3-12&m=3.2.0..1.`
 - Chord history persisted to localStorage
 
 ## Development
