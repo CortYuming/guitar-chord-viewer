@@ -11,16 +11,24 @@ import {
   readURLState,
   useURLSync,
   EMPTY_MARKERS,
+  DEFAULT_CHORD,
+  DEFAULT_MODE,
+  DEFAULT_FROM_FRET,
+  DEFAULT_TO_FRET,
   type Markers,
 } from './hooks/useURLSync';
 import { useMRU } from './hooks/useMRU';
 
 function App() {
   const urlState = useRef(readURLState()).current;
-  const [input, setInput] = useState<string>(urlState.chord ?? 'F7+5+9');
-  const [mode, setMode] = useState<NotationMode>(urlState.mode ?? 'number');
-  const [fromFret, setFromFret] = useState<number>(urlState.fromFret ?? 0);
-  const [toFret, setToFret] = useState<number>(urlState.toFret ?? 15);
+  const [input, setInput] = useState<string>(urlState.chord ?? DEFAULT_CHORD);
+  const [mode, setMode] = useState<NotationMode>(urlState.mode ?? DEFAULT_MODE);
+  const [fromFret, setFromFret] = useState<number>(
+    urlState.fromFret ?? DEFAULT_FROM_FRET,
+  );
+  const [toFret, setToFret] = useState<number>(
+    urlState.toFret ?? DEFAULT_TO_FRET,
+  );
   const [markers, setMarkers] = useState<Markers>(
     urlState.markers ?? [...EMPTY_MARKERS],
   );

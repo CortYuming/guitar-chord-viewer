@@ -12,6 +12,10 @@ export interface URLState {
   markers: Markers;
 }
 
+export const DEFAULT_CHORD = 'F7+5+9';
+export const DEFAULT_MODE: NotationMode = 'number';
+export const DEFAULT_FROM_FRET = 0;
+export const DEFAULT_TO_FRET = 15;
 export const EMPTY_MARKERS: Markers = [null, null, null, null, null, null];
 
 export function readURLState(): Partial<URLState> {
@@ -48,18 +52,25 @@ export function readURLState(): Partial<URLState> {
 export function useURLSync(state: URLState) {
   useEffect(() => {
     const params = new URLSearchParams();
-    params.set('c', normalizeToASCII(state.chord));
-    params.set('n', state.mode);
-    params.set('f', `${state.fromFret}-${state.toFret}`);
+    const normChord = normalizeToASCII(state.chord);
+    if (normChord !== DEFAULT_CHORD) params.set('c', normChord);
+    if (state.mode !== DEFAULT_MODE) params.set('n', state.mode);
+    if (
+      state.fromFret !== DEFAULT_FROM_FRET ||
+      state.toFret !== DEFAULT_TO_FRET
+    ) {
+      params.set('f', `${state.fromFret}-${state.toFret}`);
+    }
     if (state.markers.some((m) => m !== null)) {
       params.set(
         'm',
         state.markers.map((m) => (m === null ? '' : String(m))).join('.'),
       );
     }
-    const qs = '?' + params.toString();
+    const qs = params.toString();
+    const url = qs ? '?' + qs : window.location.pathname;
     try {
-      history.replaceState(null, '', qs);
+      history.replaceState(null, '', url);
     } catch (_e) {
       // no-op
     }
