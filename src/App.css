@@ -479,19 +479,29 @@ body {
   margin-left: auto;
   padding: 4px 10px;
   background: transparent;
-  border: 1px dashed var(--panel-border);
+  border: 1px solid var(--accent);
   border-radius: 999px;
-  color: var(--muted);
-  font-size: 11px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   letter-spacing: 0.04em;
-  transition: color 0.12s, border-color 0.12s;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
 .picks-clear:hover {
   color: #c8443f;
   border-color: #c8443f;
-  border-style: solid;
+}
+.picks-clear-inline {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .legend {

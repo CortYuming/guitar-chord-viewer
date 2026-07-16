@@ -299,7 +299,7 @@ function App() {
 
       <div className="footer-note">
         <div>
-          Click any cell to mark a fingering; use <strong>Clear picks</strong> to remove.
+          Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove.
         </div>
       </div>
     </>
