@@ -50,6 +50,23 @@ function App() {
     else document.documentElement.removeAttribute('data-theme');
   }, [theme]);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        setMode((m) => (m === 'number' ? 'note' : 'number'));
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   useURLSync({
     chord: chord?.label ?? input,
     mode,
@@ -300,6 +317,9 @@ function App() {
       <div className="footer-note">
         <div>
           Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove.
+        </div>
+        <div>
+          Shortcut: <code>N</code> toggles Degrees / Notes.
         </div>
       </div>
     </>
