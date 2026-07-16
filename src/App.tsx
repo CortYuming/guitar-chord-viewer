@@ -251,7 +251,7 @@ function App() {
             title="Clear all history"
             type="button"
           >
-            Clear all
+            Clear history
           </button>
         )}
       </div>
