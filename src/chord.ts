@@ -23,7 +23,22 @@ export const OPEN_STRINGS = [4, 11, 7, 2, 9, 4] as const;
 
 export const FRET_MARKERS = new Set([3, 5, 7, 9, 12, 15, 17, 19, 21]);
 
-const QUALITY_MAP: Record<string, number[]> = {
+export interface Tension {
+  n: number;
+  sign: '♯' | '♭';
+  adjusted: number;
+}
+
+const ALT_TENSIONS: Tension[] = [
+  { n: 9, sign: '♭', adjusted: 1 },
+  { n: 9, sign: '♯', adjusted: 3 },
+  { n: 5, sign: '♭', adjusted: 6 },
+  { n: 5, sign: '♯', adjusted: 8 },
+];
+
+type QualityValue = number[] | { tones: number[]; tensions: Tension[] };
+
+const QUALITY_MAP: Record<string, QualityValue> = {
   '': [0, 4, 7], 'maj': [0, 4, 7], 'M': [0, 4, 7],
   'm': [0, 3, 7], 'min': [0, 3, 7], '-': [0, 3, 7],
   'dim': [0, 3, 6], '°': [0, 3, 6],
@@ -33,18 +48,31 @@ const QUALITY_MAP: Record<string, number[]> = {
   '7': [0, 4, 7, 10],
   'M7': [0, 4, 7, 11], 'maj7': [0, 4, 7, 11], 'Δ7': [0, 4, 7, 11], 'Δ': [0, 4, 7, 11],
   'm7': [0, 3, 7, 10], 'min7': [0, 3, 7, 10], '-7': [0, 3, 7, 10],
-  'mM7': [0, 3, 7, 11], 'mmaj7': [0, 3, 7, 11],
-  'm7b5': [0, 3, 6, 10],
+  'mM7': [0, 3, 7, 11], 'mmaj7': [0, 3, 7, 11], 'mΔ7': [0, 3, 7, 11],
+  'm7b5': [0, 3, 6, 10], 'ø': [0, 3, 6, 10], 'ø7': [0, 3, 6, 10],
   'dim7': [0, 3, 6, 9], '°7': [0, 3, 6, 9],
   'aug7': [0, 4, 8, 10],
   '9': [0, 4, 7, 10, 2],
-  'M9': [0, 4, 7, 11, 2], 'maj9': [0, 4, 7, 11, 2],
+  'M9': [0, 4, 7, 11, 2], 'maj9': [0, 4, 7, 11, 2], 'Δ9': [0, 4, 7, 11, 2],
   'm9': [0, 3, 7, 10, 2],
   '11': [0, 4, 7, 10, 2, 5],
   'm11': [0, 3, 7, 10, 2, 5],
   '13': [0, 4, 7, 10, 2, 5, 9],
-  'M13': [0, 4, 7, 11, 2, 5, 9], 'maj13': [0, 4, 7, 11, 2, 5, 9],
+  'M13': [0, 4, 7, 11, 2, 5, 9], 'maj13': [0, 4, 7, 11, 2, 5, 9], 'Δ13': [0, 4, 7, 11, 2, 5, 9],
   'm13': [0, 3, 7, 10, 2, 5, 9],
+
+  'add9': [0, 4, 7, 2], 'add11': [0, 4, 7, 5], 'add13': [0, 4, 7, 9],
+  'madd9': [0, 3, 7, 2], 'madd11': [0, 3, 7, 5], 'madd13': [0, 3, 7, 9],
+
+  '6/9': [0, 4, 7, 9, 2], '69': [0, 4, 7, 9, 2],
+  'm6/9': [0, 3, 7, 9, 2], 'm69': [0, 3, 7, 9, 2],
+
+  '7sus4': [0, 5, 7, 10], '7sus': [0, 5, 7, 10],
+  '9sus4': [0, 5, 7, 10, 2], '9sus': [0, 5, 7, 10, 2],
+  '13sus4': [0, 5, 7, 10, 2, 9], '13sus': [0, 5, 7, 10, 2, 9],
+
+  'alt': { tones: [0, 4, 10], tensions: ALT_TENSIONS },
+  '7alt': { tones: [0, 4, 10], tensions: ALT_TENSIONS },
 };
 
 const ROOT_MAP: Record<string, number> = {
@@ -54,12 +82,6 @@ const ROOT_MAP: Record<string, number> = {
 const TENSION_NAT: Record<number, number> = {
   2: 2, 4: 5, 5: 7, 6: 9, 7: 10, 9: 2, 11: 5, 13: 9,
 };
-
-export interface Tension {
-  n: number;
-  sign: '♯' | '♭';
-  adjusted: number;
-}
 
 export interface Chord {
   root: number;
@@ -72,6 +94,15 @@ export interface Chord {
 
 export function normalizeToASCII(s: string): string {
   return s.replace(/♯/g, '#').replace(/♭/g, 'b');
+}
+
+export function normalizeAliases(s: string): string {
+  return s
+    .replace(/∆/g, 'Δ')
+    .replace(/△/g, 'Δ')
+    .replace(/major/gi, 'maj')
+    .replace(/Ma(?!j)/g, 'maj')
+    .replace(/MA(?![Jj])/g, 'maj');
 }
 
 export function noteLabel(semi: number): string {
@@ -97,7 +128,7 @@ const QUALITY_KEYS = Object.keys(QUALITY_MAP)
   .sort((a, b) => b.length - a.length);
 
 export function parseChord(input: string): Chord | null {
-  const s = input.trim().replace(/\s+/g, '');
+  const s = normalizeAliases(input.trim().replace(/\s+/g, ''));
   if (!s) return null;
   const rootParse = parseRoot(s);
   if (!rootParse) return null;
@@ -112,10 +143,12 @@ export function parseChord(input: string): Chord | null {
     }
   }
 
-  const base = QUALITY_MAP[quality] ?? [0, 4, 7];
+  const raw = QUALITY_MAP[quality] ?? [0, 4, 7];
+  const base = Array.isArray(raw) ? raw : raw.tones;
+  const presetTensions: Tension[] = Array.isArray(raw) ? [] : raw.tensions;
   const tones = new Set(base);
 
-  const tensions: Tension[] = [];
+  const parsedTensions: Tension[] = [];
   const re = /([+#♯b♭])(\d+)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(rest)) !== null) {
@@ -125,9 +158,10 @@ export function parseChord(input: string): Chord | null {
     if (natural === undefined) continue;
     const isSharp = sign === '+' || sign === '#' || sign === '♯';
     const adjusted = isSharp ? (natural + 1) % 12 : (natural + 11) % 12;
-    tensions.push({ n, sign: isSharp ? '♯' : '♭', adjusted });
+    parsedTensions.push({ n, sign: isSharp ? '♯' : '♭', adjusted });
   }
 
+  const tensions: Tension[] = [...presetTensions, ...parsedTensions];
   for (const t of tensions) {
     if (t.n === 5) tones.delete(7);
     if (t.n === 7) { tones.delete(10); tones.delete(11); }

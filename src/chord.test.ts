@@ -141,3 +141,160 @@ describe('normalizeToASCII', () => {
     expect(normalizeToASCII('F#m7b5')).toBe('F#m7b5');
   });
 });
+
+describe('parseChord — maj7 aliases', () => {
+  it('parses C∆7 (INCREMENT) same as CΔ7', () => {
+    const a = parseChord('C∆7')!;
+    const b = parseChord('CΔ7')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 4, 7, 11]);
+  });
+
+  it('parses C△7 (WHITE TRIANGLE) same as CΔ7', () => {
+    const a = parseChord('C△7')!;
+    const b = parseChord('CΔ7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses Cmajor7 same as Cmaj7', () => {
+    const a = parseChord('Cmajor7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 4, 7, 11]);
+  });
+
+  it('parses CMajor7 (capitalized) same as Cmaj7', () => {
+    const a = parseChord('CMajor7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses CMa7 same as Cmaj7', () => {
+    const a = parseChord('CMa7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses CMA7 same as Cmaj7', () => {
+    const a = parseChord('CMA7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses "C maj 7" (with spaces) as Cmaj7', () => {
+    const a = parseChord('C maj 7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses "C major 7" (with spaces) as Cmaj7', () => {
+    const a = parseChord('C major 7')!;
+    const b = parseChord('Cmaj7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+});
+
+describe('parseChord — half-diminished ø', () => {
+  it('parses Bø same as Bm7b5', () => {
+    const a = parseChord('Bø')!;
+    const b = parseChord('Bm7b5')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 3, 6, 10]);
+  });
+
+  it('parses Bø7 same as Bm7b5', () => {
+    const a = parseChord('Bø7')!;
+    const b = parseChord('Bm7b5')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+});
+
+describe('parseChord — add / 6/9 / sus jazz voicings', () => {
+  it('parses Cadd9', () => {
+    const c = parseChord('Cadd9')!;
+    expect(c.tones).toEqual([0, 2, 4, 7]);
+  });
+
+  it('parses Cadd11', () => {
+    const c = parseChord('Cadd11')!;
+    expect(c.tones).toEqual([0, 4, 5, 7]);
+  });
+
+  it('parses Cmadd9', () => {
+    const c = parseChord('Cmadd9')!;
+    expect(c.tones).toEqual([0, 2, 3, 7]);
+  });
+
+  it('parses C6/9 same as C69', () => {
+    const a = parseChord('C6/9')!;
+    const b = parseChord('C69')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 2, 4, 7, 9]);
+  });
+
+  it('parses Cm6/9 same as Cm69', () => {
+    const a = parseChord('Cm6/9')!;
+    const b = parseChord('Cm69')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 2, 3, 7, 9]);
+  });
+
+  it('parses G7sus4', () => {
+    const c = parseChord('G7sus4')!;
+    expect(c.root).toBe(7);
+    expect(c.tones).toEqual([0, 5, 7, 10]);
+  });
+
+  it('parses G9sus4', () => {
+    const c = parseChord('G9sus4')!;
+    expect(c.tones).toEqual([0, 2, 5, 7, 10]);
+  });
+
+  it('parses G13sus4', () => {
+    const c = parseChord('G13sus4')!;
+    expect(c.tones).toEqual([0, 2, 5, 7, 9, 10]);
+  });
+});
+
+describe('parseChord — altered dominant (alt)', () => {
+  it('parses G7alt with all four alterations', () => {
+    const c = parseChord('G7alt')!;
+    expect(c.root).toBe(7);
+    expect(c.tones).toEqual([0, 1, 3, 4, 6, 8, 10]);
+  });
+
+  it('parses Galt same as G7alt', () => {
+    const a = parseChord('Galt')!;
+    const b = parseChord('G7alt')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('shows tension names for G7alt', () => {
+    const c = parseChord('G7alt')!;
+    const s = chordSummary(c);
+    expect(s.intervals).toContain('♭9');
+    expect(s.intervals).toContain('♯9');
+    expect(s.intervals).toContain('♭5');
+    expect(s.intervals).toContain('♯5');
+  });
+});
+
+describe('parseChord — Δ variants', () => {
+  it('parses CΔ9 same as Cmaj9', () => {
+    const a = parseChord('CΔ9')!;
+    const b = parseChord('Cmaj9')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses CΔ13 same as Cmaj13', () => {
+    const a = parseChord('CΔ13')!;
+    const b = parseChord('Cmaj13')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+
+  it('parses CmΔ7 same as CmM7', () => {
+    const a = parseChord('CmΔ7')!;
+    const b = parseChord('CmM7')!;
+    expect(a.tones).toEqual(b.tones);
+  });
+});
