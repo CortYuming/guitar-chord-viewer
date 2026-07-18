@@ -6,13 +6,12 @@ import {
   chordSummary,
   normalizeToASCII,
 } from './chord';
-import { Fretboard, type NotationMode } from './components/Fretboard';
+import { Fretboard } from './components/Fretboard';
 import {
   readURLState,
   useURLSync,
   EMPTY_MARKERS,
   DEFAULT_CHORD,
-  DEFAULT_MODE,
   DEFAULT_FROM_FRET,
   DEFAULT_TO_FRET,
   type Markers,
@@ -22,7 +21,6 @@ import { useMRU } from './hooks/useMRU';
 function App() {
   const urlState = useRef(readURLState()).current;
   const [input, setInput] = useState<string>(urlState.chord ?? DEFAULT_CHORD);
-  const [mode, setMode] = useState<NotationMode>(urlState.mode ?? DEFAULT_MODE);
   const [fromFret, setFromFret] = useState<number>(
     urlState.fromFret ?? DEFAULT_FROM_FRET,
   );
@@ -50,26 +48,8 @@ function App() {
     else document.documentElement.removeAttribute('data-theme');
   }, [theme]);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      )
-        return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === 'n' || e.key === 'N') {
-        e.preventDefault();
-        setMode((m) => (m === 'number' ? 'note' : 'number'));
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
   useURLSync({
     chord: chord?.label ?? input,
-    mode,
     fromFret,
     toFret,
     markers,
@@ -265,44 +245,41 @@ function App() {
         </div>
       )}
 
-      <div className="notation-toggle-row">
-        <div className="notation-toggle" role="group" aria-label="Notation">
-          <button
-            className={mode === 'number' ? 'active' : ''}
-            onClick={() => setMode('number')}
-          >
-            Degrees
-          </button>
-          <button
-            className={mode === 'note' ? 'active' : ''}
-            onClick={() => setMode('note')}
-          >
-            Notes
-          </button>
-        </div>
-        {hasAnyMarker && (
-          <button
-            className="picks-clear"
-            onClick={handleClearMarkers}
-            title="Clear all picks"
-            type="button"
-          >
-            Clear picks
-          </button>
-        )}
-      </div>
-
       {chord && (
-        <div className="fretboard-wrap">
-          <Fretboard
-            chord={chord}
-            mode={mode}
-            fromFret={fromFret}
-            toFret={toFret}
-            markers={markers}
-            onMarkerToggle={handleMarkerToggle}
-          />
-        </div>
+        <>
+          {hasAnyMarker && (
+            <div className="fretboard-header">
+              <button
+                className="picks-clear"
+                onClick={handleClearMarkers}
+                title="Clear all picks"
+                type="button"
+              >
+                Clear picks
+              </button>
+            </div>
+          )}
+          <div className="fretboard-wrap">
+            <Fretboard
+              chord={chord}
+              mode="number"
+              fromFret={fromFret}
+              toFret={toFret}
+              markers={markers}
+              onMarkerToggle={handleMarkerToggle}
+            />
+          </div>
+          <div className="fretboard-wrap">
+            <Fretboard
+              chord={chord}
+              mode="note"
+              fromFret={fromFret}
+              toFret={toFret}
+              markers={markers}
+              onMarkerToggle={handleMarkerToggle}
+            />
+          </div>
+        </>
       )}
 
       <div className="legend">
@@ -317,9 +294,6 @@ function App() {
       <div className="footer-note">
         <div>
           Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove.
-        </div>
-        <div>
-          Shortcut: <code>N</code> toggles Degrees / Notes.
         </div>
       </div>
     </>
