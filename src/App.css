@@ -435,7 +435,7 @@ body {
 .note-cell.chord-tone {
   background: var(--highlight-bg);
 }
-.note-cell.non-chord {
+.note-cell.non-chord:not(.marked) {
   opacity: 0.32;
   font-weight: 500;
 }
