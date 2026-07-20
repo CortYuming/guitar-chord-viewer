@@ -262,7 +262,7 @@ function App() {
           <div className="fretboard-wrap">
             <Fretboard
               chord={chord}
-              mode="number"
+              mode="note"
               fromFret={fromFret}
               toFret={toFret}
               markers={markers}
@@ -272,7 +272,7 @@ function App() {
           <div className="fretboard-wrap">
             <Fretboard
               chord={chord}
-              mode="note"
+              mode="number"
               fromFret={fromFret}
               toFret={toFret}
               markers={markers}

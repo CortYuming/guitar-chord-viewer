@@ -36,13 +36,15 @@ const ALT_TENSIONS: Tension[] = [
   { n: 5, sign: '♯', adjusted: 8 },
 ];
 
+const AUG5: Tension[] = [{ n: 5, sign: '♯', adjusted: 8 }];
+
 type QualityValue = number[] | { tones: number[]; tensions: Tension[] };
 
 const QUALITY_MAP: Record<string, QualityValue> = {
   '': [0, 4, 7], 'maj': [0, 4, 7], 'M': [0, 4, 7],
   'm': [0, 3, 7], 'min': [0, 3, 7], '-': [0, 3, 7],
   'dim': [0, 3, 6], '°': [0, 3, 6],
-  'aug': [0, 4, 8],
+  'aug': { tones: [0, 4], tensions: AUG5 },
   'sus2': [0, 2, 7], 'sus4': [0, 5, 7], 'sus': [0, 5, 7],
   '6': [0, 4, 7, 9], 'm6': [0, 3, 7, 9], 'min6': [0, 3, 7, 9],
   '7': [0, 4, 7, 10],
@@ -51,7 +53,7 @@ const QUALITY_MAP: Record<string, QualityValue> = {
   'mM7': [0, 3, 7, 11], 'mmaj7': [0, 3, 7, 11], 'mΔ7': [0, 3, 7, 11],
   'm7b5': [0, 3, 6, 10], 'ø': [0, 3, 6, 10], 'ø7': [0, 3, 6, 10],
   'dim7': [0, 3, 6, 9], '°7': [0, 3, 6, 9],
-  'aug7': [0, 4, 8, 10],
+  'aug7': { tones: [0, 4, 10], tensions: AUG5 },
   '9': [0, 4, 7, 10, 2],
   'M9': [0, 4, 7, 11, 2], 'maj9': [0, 4, 7, 11, 2], 'Δ9': [0, 4, 7, 11, 2],
   'm9': [0, 3, 7, 10, 2],
@@ -102,7 +104,16 @@ export function normalizeAliases(s: string): string {
     .replace(/△/g, 'Δ')
     .replace(/major/gi, 'maj')
     .replace(/Ma(?!j)/g, 'maj')
-    .replace(/MA(?![Jj])/g, 'maj');
+    .replace(/MA(?![Jj])/g, 'maj')
+    // Joe Pass notation: Cm+7 = minor(major7th), the '+7' means natural 7.
+    // Guard this before the augmented rules below rewrite '+7'.
+    .replace(/m\+7/g, 'mM7')
+    // Augmented: '+' on the 5th. C7aug / C7+ / C+7 all = aug7; C+ = aug.
+    // '+' immediately before a digit (e.g. +5, +9) stays a tension.
+    .replace(/7aug/g, 'aug7')
+    .replace(/7\+(?!\d)/g, 'aug7')
+    .replace(/\+7(?!\d)/g, 'aug7')
+    .replace(/\+(?!\d)/g, 'aug');
 }
 
 export function noteLabel(semi: number): string {

@@ -279,6 +279,51 @@ describe('parseChord — altered dominant (alt)', () => {
   });
 });
 
+describe('parseChord — augmented (Joe Pass notation)', () => {
+  it('parses Caug as 1 3 #5', () => {
+    const c = parseChord('Caug')!;
+    expect(c.tones).toEqual([0, 4, 8]);
+  });
+
+  it('parses C+ same as Caug', () => {
+    const a = parseChord('C+')!;
+    const b = parseChord('Caug')!;
+    expect(a.tones).toEqual(b.tones);
+    expect(a.tones).toEqual([0, 4, 8]);
+  });
+
+  it('parses C7aug / C7+ / C+7 identically as 1 3 #5 7', () => {
+    const aug = parseChord('C7aug')!;
+    const plus = parseChord('C7+')!;
+    const preplus = parseChord('C+7')!;
+    expect(aug.tones).toEqual([0, 4, 8, 10]);
+    expect(plus.tones).toEqual([0, 4, 8, 10]);
+    expect(preplus.tones).toEqual([0, 4, 8, 10]);
+  });
+
+  it('shows #5 in summary for augmented chords', () => {
+    expect(chordSummary(parseChord('Caug')!).intervals).toContain('♯5');
+    expect(chordSummary(parseChord('C7+')!).intervals).toContain('♯5');
+  });
+
+  it('parses F7+ as aug7 so #5 (interval 8) is a chord tone', () => {
+    const c = parseChord('F7+')!;
+    expect(c.root).toBe(5);
+    expect(c.tones).toContain(8);
+    expect(c.tones).toEqual([0, 4, 8, 10]);
+  });
+
+  it('does NOT treat Cm+7 as augmented (it is minor-major7)', () => {
+    const c = parseChord('Cm+7')!;
+    expect(c.tones).toEqual([0, 3, 7, 11]);
+  });
+
+  it('keeps +5 / +9 as tensions, not augmented quality', () => {
+    const c = parseChord('C7+5+9')!;
+    expect(c.tones).toEqual([0, 3, 4, 8, 10]);
+  });
+});
+
 describe('parseChord — Δ variants', () => {
   it('parses CΔ9 same as Cmaj9', () => {
     const a = parseChord('CΔ9')!;
