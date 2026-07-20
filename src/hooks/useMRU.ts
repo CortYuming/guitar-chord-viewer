@@ -51,5 +51,9 @@ export function useMRU() {
 
   const clear = useCallback(() => setMru([]), []);
 
-  return { mru, push, remove, clear };
+  const trimTo = useCallback((n: number) => {
+    setMru((prev) => prev.slice(0, Math.max(0, n)));
+  }, []);
+
+  return { mru, push, remove, clear, trimTo };
 }

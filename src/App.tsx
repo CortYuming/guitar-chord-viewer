@@ -18,6 +18,10 @@ import {
 } from './hooks/useURLSync';
 import { useMRU } from './hooks/useMRU';
 
+// Number of most-recent history items kept pinned (no remove button, never
+// bulk-deleted via Shift+Click).
+const MRU_PINNED_COUNT = 5;
+
 function App() {
   const urlState = useRef(readURLState()).current;
   const [input, setInput] = useState<string>(urlState.chord ?? DEFAULT_CHORD);
@@ -34,7 +38,7 @@ function App() {
   const [copyLabel, setCopyLabel] = useState('🔗 URL');
   const [copyMdLabel, setCopyMdLabel] = useState('📝 MD');
 
-  const { mru, push: pushMRU, remove: removeMRU, clear: clearMRU } = useMRU();
+  const { mru, push: pushMRU, remove: removeMRU, clear: clearMRU, trimTo: trimMRU } = useMRU();
 
   const chord = useMemo(() => parseChord(input), [input]);
 
@@ -190,7 +194,7 @@ function App() {
       <div className="mru-section">
         <div className="mru-list">
           {mru.map((c, i) => {
-            const showRemove = i >= 5;
+            const showRemove = i >= MRU_PINNED_COUNT;
             return (
               <span
                 key={c}
@@ -210,8 +214,22 @@ function App() {
                 {showRemove && (
                   <button
                     className="mru-item-remove"
-                    onClick={() => removeMRU(c)}
-                    title="Remove from history"
+                    onClick={(e) => {
+                      if (e.shiftKey) {
+                        const n = mru.length - MRU_PINNED_COUNT;
+                        if (
+                          n > 0 &&
+                          window.confirm(
+                            `Remove all ${n} history items except the ${MRU_PINNED_COUNT} most recent?`
+                          )
+                        ) {
+                          trimMRU(MRU_PINNED_COUNT);
+                        }
+                      } else {
+                        removeMRU(c);
+                      }
+                    }}
+                    title="Remove from history (Shift+Click: remove all but recent 5)"
                     aria-label={`Remove ${c} from history`}
                     type="button"
                   >
@@ -294,6 +312,9 @@ function App() {
       <div className="footer-note">
         <div>
           Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove.
+        </div>
+        <div>
+          In history, click <span className="picks-clear-inline">×</span> to remove one item; Shift+Click to remove all but the {MRU_PINNED_COUNT} most recent.
         </div>
       </div>
     </>
