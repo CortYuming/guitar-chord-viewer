@@ -8,6 +8,8 @@ export interface URLState {
   fromFret: number;
   toFret: number;
   markers: Markers;
+  // Degree fretboard labelled with solfege instead of degree numbers.
+  solfege: boolean;
 }
 
 export const DEFAULT_CHORD = 'F7+5+9';
@@ -41,6 +43,7 @@ export function readURLState(): Partial<URLState> {
       state.markers = parsed;
     }
   }
+  if (params.get('n') === 's') state.solfege = true;
   return state;
 }
 
@@ -61,6 +64,7 @@ export function useURLSync(state: URLState) {
         state.markers.map((m) => (m === null ? '' : String(m))).join('.'),
       );
     }
+    if (state.solfege) params.set('n', 's');
     const qs = params.toString();
     const url = qs ? '?' + qs : window.location.pathname;
     try {
@@ -68,5 +72,5 @@ export function useURLSync(state: URLState) {
     } catch (_e) {
       // no-op
     }
-  }, [state.chord, state.fromFret, state.toFret, state.markers]);
+  }, [state.chord, state.fromFret, state.toFret, state.markers, state.solfege]);
 }

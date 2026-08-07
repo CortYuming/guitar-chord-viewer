@@ -506,12 +506,32 @@ body {
   margin-bottom: 18px;
   align-items: center;
 }
-.legend-title {
+.legend-toggle {
+  display: inline-flex;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-right: 8px;
+}
+.legend-toggle-btn {
+  padding: 3px 10px;
+  background: transparent;
+  border: 0;
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-right: 8px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+.legend-toggle-btn:hover {
+  color: var(--fg);
+}
+.legend-toggle-btn.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 .legend-item {
   font-variant-numeric: tabular-nums;

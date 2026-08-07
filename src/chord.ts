@@ -12,6 +12,17 @@ export const NOTES_FLAT = [
   'C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B',
 ] as const;
 
+// Movable-do solfege, indexed by semitones above the chord root. Raised
+// degrees take an 'i' vowel, lowered ones an 'o'; 'swo' keeps the glide so it
+// stays distinct from 'so'.
+export const SOLFEGE_SHARP = [
+  'do', 'di', 're', 'ri', 'mi', 'fa', 'fi', 'so', 'si', 'la', 'li', 'ti',
+] as const;
+
+export const SOLFEGE_FLAT = [
+  'do', 'ro', 're', 'mo', 'mi', 'fa', 'swo', 'so', 'lo', 'la', 'to', 'ti',
+] as const;
+
 export const OPEN_STRINGS = [4, 11, 7, 2, 9, 4] as const;
 
 export const FRET_MARKERS = new Set([3, 5, 7, 9, 12, 15, 17, 19, 21]);
@@ -205,6 +216,19 @@ export function contextualName(semi: number, chord: Chord): string {
   return CONTEXTUAL_SUMMARY[semi];
 }
 
+// Solfege counterpart of contextualName, so the two labellings always agree.
+// The flat row is the default because CONTEXTUAL_SUMMARY spells unaltered
+// degrees with flats (♭3, ♭7, ...). An altered tension carries its own sign,
+// so ♯9 reads 'ri', not 'mo'.
+export function solfegeName(semi: number, chord: Chord): string {
+  for (const t of chord.tensions) {
+    if (t.adjusted === semi) {
+      return t.sign === '♯' ? SOLFEGE_SHARP[semi] : SOLFEGE_FLAT[semi];
+    }
+  }
+  return SOLFEGE_FLAT[semi];
+}
+
 // Degree names for all 12 semitones, contextualized to the chord when there is one.
 export function degreeLabels(chord: Chord | null): string[] {
   return Array.from({ length: 12 }, (_, semi) =>
@@ -212,12 +236,23 @@ export function degreeLabels(chord: Chord | null): string[] {
   );
 }
 
+// Solfege counterpart of degreeLabels. Without a chord, the flat row matches
+// the flat-leaning defaults in CONTEXTUAL_SUMMARY.
+export function solfegeLabels(chord: Chord | null): string[] {
+  return Array.from({ length: 12 }, (_, semi) =>
+    chord ? solfegeName(semi, chord) : SOLFEGE_FLAT[semi],
+  );
+}
+
 // Degree/note pairs in chord-tone order, so the UI can stack them in aligned columns.
-export function chordTonePairs(chord: Chord): { interval: string; note: string }[] {
+export function chordTonePairs(
+  chord: Chord,
+): { interval: string; note: string; solfege: string }[] {
   const accidental = accidentalFor(chord);
   return chord.tones.map(t => ({
     interval: contextualName(t, chord),
     note: noteLabel((t + chord.root) % 12, accidental),
+    solfege: solfegeName(t, chord),
   }));
 }
 

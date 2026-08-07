@@ -6,10 +6,11 @@ import {
   accidentalFor,
   contextualName,
   noteLabel,
+  solfegeName,
 } from '../chord';
 import type { Markers } from '../hooks/useURLSync';
 
-export type NotationMode = 'number' | 'note';
+export type NotationMode = 'number' | 'note' | 'solfege';
 
 interface Props {
   chord: Chord;
@@ -61,14 +62,18 @@ export function Fretboard({
       const interval = (semi - chord.root + 12) % 12;
       const isChordTone = toneSet.has(interval);
       const label =
-        mode === 'number'
-          ? contextualName(interval, chord)
-          : noteLabel(semi, accidental);
+        mode === 'note'
+          ? noteLabel(semi, accidental)
+          : mode === 'solfege'
+            ? solfegeName(interval, chord)
+            : contextualName(interval, chord);
       const isMarked = markers[s] === f;
       let cls = `cell note-cell int-${interval}`;
       if (f === 0) cls += ' open';
       cls += isChordTone ? ' chord-tone' : ' non-chord';
-      if (label.length > 2) cls += ' wide-label';
+      // Solfege labels are lowercase and narrow, so only the degree and note
+      // labels (♯11, C♯...) need the smaller size.
+      if (mode !== 'solfege' && label.length > 2) cls += ' wide-label';
       if (isMarked) cls += ' marked';
       noteRows.push(
         <div

@@ -6,7 +6,12 @@ import {
   accidentalFor,
   noteLabel,
   degreeLabels,
+  solfegeLabels,
+  chordTonePairs,
 } from './chord';
+
+const solfegeOf = (chord: string) =>
+  chordTonePairs(parseChord(chord)!).map(p => p.solfege);
 
 describe('parseChord', () => {
   it('parses simple major triad', () => {
@@ -409,6 +414,46 @@ describe('degreeLabels', () => {
     const labels = degreeLabels(parseChord('C7')!);
     expect(labels[10]).toBe('♭7');
     expect(labels[11]).toBe('Δ7');
+  });
+});
+
+describe('solfege', () => {
+  it('names a minor seventh chord', () => {
+    expect(solfegeOf('Cm7')).toEqual(['do', 'mo', 'so', 'to']);
+  });
+
+  it('names a major seventh chord', () => {
+    expect(solfegeOf('CM7')).toEqual(['do', 'mi', 'so', 'ti']);
+  });
+
+  it('keeps the flat row for a plain dominant, whatever the root spelling', () => {
+    expect(solfegeOf('C7')).toEqual(['do', 'mi', 'so', 'to']);
+    expect(solfegeOf('D7')).toEqual(['do', 'mi', 'so', 'to']);
+  });
+
+  it('reads an altered ninth as ri, not mo', () => {
+    expect(solfegeOf('C7#9')).toEqual(['do', 'ri', 'mi', 'so', 'to']);
+  });
+
+  it('reads ♯5 as si and ♯9 as ri together', () => {
+    expect(solfegeOf('F7+5+9')).toEqual(['do', 'ri', 'mi', 'si', 'to']);
+  });
+
+  it('reads an unaltered ♭5 as swo', () => {
+    expect(solfegeOf('Cm7b5')).toEqual(['do', 'mo', 'swo', 'to']);
+  });
+
+  it('reads the augmented fifth as si', () => {
+    expect(solfegeOf('Caug')).toEqual(['do', 'mi', 'si']);
+  });
+
+  it('agrees one-for-one with the degree labels', () => {
+    expect(solfegeLabels(null)).toEqual([
+      'do', 'ro', 're', 'mo', 'mi', 'fa', 'swo', 'so', 'lo', 'la', 'to', 'ti',
+    ]);
+    const labels = solfegeLabels(parseChord('C7#9')!);
+    expect(labels[3]).toBe('ri');
+    expect(labels[10]).toBe('to');
   });
 });
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import {
   degreeLabels,
+  solfegeLabels,
   parseChord,
   chordTonePairs,
   normalizeToASCII,
@@ -34,6 +35,7 @@ function App() {
   const [markers, setMarkers] = useState<Markers>(
     urlState.markers ?? [...EMPTY_MARKERS],
   );
+  const [solfege, setSolfege] = useState<boolean>(urlState.solfege ?? false);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [copyLabel, setCopyLabel] = useState('🔗 URL');
   const [copyMdLabel, setCopyMdLabel] = useState('📝 MD');
@@ -52,15 +54,42 @@ function App() {
     else document.documentElement.removeAttribute('data-theme');
   }, [theme]);
 
+  // 's' toggles the degree/solfege labelling. Typing in a field wins, and
+  // modified keystrokes are left to the browser.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key.toLowerCase() !== 's') return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        el?.isContentEditable
+      ) {
+        return;
+      }
+      e.preventDefault();
+      setSolfege((v) => !v);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   useURLSync({
     chord: chord?.label ?? input,
     fromFret,
     toFret,
     markers,
+    solfege,
   });
 
   const tonePairs = chord ? chordTonePairs(chord) : null;
-  const legendLabels = useMemo(() => degreeLabels(chord), [chord]);
+  const legendLabels = useMemo(
+    () => (solfege ? solfegeLabels(chord) : degreeLabels(chord)),
+    [chord, solfege],
+  );
 
   const handleFrom = (v: number) => {
     setFromFret(v);
@@ -261,7 +290,9 @@ function App() {
           <div className="chord-tones-display">
             {tonePairs.map((pair, i) => (
               <div className="chord-tone-col" key={`${pair.interval}-${i}`}>
-                <span className="chord-tone-degree">{pair.interval}</span>
+                <span className="chord-tone-degree">
+                  {solfege ? pair.solfege : pair.interval}
+                </span>
                 <span className="chord-tone-note">{pair.note}</span>
               </div>
             ))}
@@ -296,7 +327,7 @@ function App() {
           <div className="fretboard-wrap">
             <Fretboard
               chord={chord}
-              mode="number"
+              mode={solfege ? 'solfege' : 'number'}
               fromFret={fromFret}
               toFret={toFret}
               markers={markers}
@@ -307,7 +338,26 @@ function App() {
       )}
 
       <div className="legend">
-        <span className="legend-title">Degrees</span>
+        <div className="legend-toggle" role="group" aria-label="Degree notation">
+          <button
+            className={'legend-toggle-btn' + (solfege ? '' : ' active')}
+            onClick={() => setSolfege(false)}
+            aria-pressed={!solfege}
+            title="Label the lower fretboard with degree numbers (s)"
+            type="button"
+          >
+            Degrees
+          </button>
+          <button
+            className={'legend-toggle-btn' + (solfege ? ' active' : '')}
+            onClick={() => setSolfege(true)}
+            aria-pressed={solfege}
+            title="Label the lower fretboard with movable-do solfege (s)"
+            type="button"
+          >
+            Solfege
+          </button>
+        </div>
         {legendLabels.map((label, i) => (
           <span key={i} className={`legend-item int-${i}`}>
             {label}
@@ -321,6 +371,9 @@ function App() {
         </div>
         <div>
           In history, click <span className="picks-clear-inline">×</span> to remove one item; Shift+Click to remove all but the {MRU_PINNED_COUNT} most recent.
+        </div>
+        <div>
+          Switch <span className="picks-clear-inline">Degrees</span> / <span className="picks-clear-inline">Solfege</span> to relabel the lower fretboard, or press <span className="picks-clear-inline">s</span>; the choice is kept in the URL.
         </div>
       </div>
     </>
