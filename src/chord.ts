@@ -196,8 +196,18 @@ export function contextualName(semi: number, chord: Chord): string {
   return CONTEXTUAL_SUMMARY[semi];
 }
 
+// Degree/note pairs in chord-tone order, so the UI can stack them in aligned columns.
+export function chordTonePairs(chord: Chord): { interval: string; note: string }[] {
+  return chord.tones.map(t => ({
+    interval: contextualName(t, chord),
+    note: NOTES_SHARP[(t + chord.root) % 12],
+  }));
+}
+
 export function chordSummary(chord: Chord): { intervals: string; notes: string } {
-  const intervals = chord.tones.map(t => contextualName(t, chord)).join(', ');
-  const notes = chord.tones.map(t => NOTES_SHARP[(t + chord.root) % 12]).join(', ');
-  return { intervals, notes };
+  const pairs = chordTonePairs(chord);
+  return {
+    intervals: pairs.map(p => p.interval).join(', '),
+    notes: pairs.map(p => p.note).join(', '),
+  };
 }

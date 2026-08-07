@@ -320,7 +320,7 @@ body {
   padding: 12px 20px;
   margin-bottom: 14px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 20px;
   flex-wrap: wrap;
 }
@@ -331,15 +331,28 @@ body {
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
+/* Degree on top, note below, one column per chord tone so they read as pairs. */
 .chord-tones-display {
-  color: var(--muted);
-  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   font-variant-numeric: tabular-nums;
 }
-.chord-tones-display strong {
+.chord-tone-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 26px;
+  line-height: 1.35;
+}
+.chord-tone-degree {
   color: var(--fg);
+  font-size: 14px;
   font-weight: 600;
-  margin-right: 4px;
+}
+.chord-tone-note {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .fretboard-wrap {

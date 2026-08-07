@@ -3,7 +3,7 @@ import './App.css';
 import {
   LEGEND_LABELS,
   parseChord,
-  chordSummary,
+  chordTonePairs,
   normalizeToASCII,
 } from './chord';
 import { Fretboard } from './components/Fretboard';
@@ -59,7 +59,7 @@ function App() {
     markers,
   });
 
-  const summary = chord ? chordSummary(chord) : null;
+  const tonePairs = chord ? chordTonePairs(chord) : null;
 
   const handleFrom = (v: number) => {
     setFromFret(v);
@@ -254,11 +254,16 @@ function App() {
         )}
       </div>
 
-      {chord && summary && (
+      {chord && tonePairs && (
         <div className="chord-info">
           <div className="chord-name-display">{chord.label}</div>
           <div className="chord-tones-display">
-            <strong>{summary.intervals}</strong> · {summary.notes}
+            {tonePairs.map((pair, i) => (
+              <div className="chord-tone-col" key={`${pair.interval}-${i}`}>
+                <span className="chord-tone-degree">{pair.interval}</span>
+                <span className="chord-tone-note">{pair.note}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
