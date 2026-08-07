@@ -5,6 +5,7 @@ import {
   FRET_MARKERS,
   accidentalFor,
   contextualName,
+  guideTones,
   noteLabel,
   solfegeName,
 } from '../chord';
@@ -34,6 +35,7 @@ export function Fretboard({
   const numCols = to - from + 1;
   const toneSet = useMemo(() => new Set(chord.tones), [chord.tones]);
   const accidental = useMemo(() => accidentalFor(chord), [chord]);
+  const guides = useMemo(() => guideTones(chord), [chord]);
 
   const MIN_CELL = 38;
   const MAX_CELL = 64;
@@ -71,6 +73,8 @@ export function Fretboard({
       let cls = `cell note-cell int-${interval}`;
       if (f === 0) cls += ' open';
       cls += isChordTone ? ' chord-tone' : ' non-chord';
+      if (interval === guides.third) cls += ' guide-third';
+      if (interval === guides.seventh) cls += ' guide-seventh';
       // Solfege labels are lowercase and narrow, so only the degree and note
       // labels (♯11, C♯...) need the smaller size.
       if (mode !== 'solfege' && label.length > 2) cls += ' wide-label';

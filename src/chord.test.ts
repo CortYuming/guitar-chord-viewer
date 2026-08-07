@@ -4,6 +4,7 @@ import {
   chordSummary,
   normalizeToASCII,
   accidentalFor,
+  guideTones,
   noteLabel,
   degreeLabels,
   solfegeLabels,
@@ -12,6 +13,8 @@ import {
 
 const solfegeOf = (chord: string) =>
   chordTonePairs(parseChord(chord)!).map(p => p.solfege);
+
+const guidesOf = (chord: string) => guideTones(parseChord(chord)!);
 
 describe('parseChord', () => {
   it('parses simple major triad', () => {
@@ -468,5 +471,32 @@ describe('noteLabel', () => {
     expect(chordSummary(parseChord('Bb13')!).notes).toBe('B♭, C, D, E♭, F, G, A♭');
     expect(chordSummary(parseChord('F7')!).notes).toBe('F, A, C, E♭');
     expect(chordSummary(parseChord('D7')!).notes).toBe('D, F♯, A, C');
+  });
+});
+
+describe('guideTones', () => {
+  it('tracks the quality of the third and the seventh', () => {
+    expect(guidesOf('Dm7')).toEqual({ third: 3, seventh: 10 });
+    expect(guidesOf('G7')).toEqual({ third: 4, seventh: 10 });
+    expect(guidesOf('Cmaj7')).toEqual({ third: 4, seventh: 11 });
+    expect(guidesOf('CmM7')).toEqual({ third: 3, seventh: 11 });
+    expect(guidesOf('Dm7b5')).toEqual({ third: 3, seventh: 10 });
+  });
+
+  it('reports no third for sus chords and no seventh for triads and sixths', () => {
+    expect(guidesOf('Csus4')).toEqual({ third: null, seventh: null });
+    expect(guidesOf('C7sus4')).toEqual({ third: null, seventh: 10 });
+    expect(guidesOf('C')).toEqual({ third: 4, seventh: null });
+    expect(guidesOf('C6')).toEqual({ third: 4, seventh: null });
+    // A diminished seventh is spelled as a sixth interval, so it is not a
+    // seventh here — the fretboard labels that degree 13 as well.
+    expect(guidesOf('Cdim7')).toEqual({ third: 3, seventh: null });
+  });
+
+  it('keeps a ♯9 tension from passing for a minor third', () => {
+    // F7+5+9 has both 3 (♯9) and 4 (the real third) among its tones.
+    expect(parseChord('F7+5+9')!.tones).toContain(3);
+    expect(guidesOf('F7+5+9')).toEqual({ third: 4, seventh: 10 });
+    expect(guidesOf('C7alt')).toEqual({ third: 4, seventh: 10 });
   });
 });

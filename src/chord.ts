@@ -209,6 +209,26 @@ export function parseChord(input: string): Chord | null {
   };
 }
 
+// The third and the seventh are the guide tones: they carry the chord's
+// quality while improvising. Their semitone counts move with the quality
+// (m3=3 / M3=4, ♭7=10 / M7=11) and some chords have neither, so read them
+// from the quality's own base tones. Reading them from chord.tones would be
+// wrong: a ♯9 tension also lands on 3 and would pass for a minor third.
+export function guideTones(chord: Chord): {
+  third: number | null;
+  seventh: number | null;
+} {
+  const raw = QUALITY_MAP[chord.quality] ?? [0, 4, 7];
+  const base = Array.isArray(raw) ? raw : raw.tones;
+  const altered = chord.tensions.find(t => t.n === 7);
+  return {
+    third: base.includes(4) ? 4 : base.includes(3) ? 3 : null,
+    seventh: altered
+      ? altered.adjusted
+      : base.includes(11) ? 11 : base.includes(10) ? 10 : null,
+  };
+}
+
 export function contextualName(semi: number, chord: Chord): string {
   for (const t of chord.tensions) {
     if (t.adjusted === semi) return `${t.sign}${t.n}`;

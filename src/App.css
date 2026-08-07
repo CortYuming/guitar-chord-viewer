@@ -12,19 +12,31 @@
   --input-border: #d3cdc0;
   --accent: #b8763a;
   --accent-soft: rgba(184, 118, 58, 0.13);
+  /* Picked positions are a different kind of information from the degrees, so
+     the frame stays achromatic and cannot be read as one of the degree hues. */
+  --pick: #7d7a72;
 
+  /* Degree hues follow two rules, so that a colour can be reasoned about rather
+     than memorised as one of twelve arbitrary values:
+       1. An altered degree is a lighter or darker cast of its natural degree —
+          ♭9 of the 9, ♭3 of the 3, ♭13 of the 13.
+       2. The sevenths and the 13 share the purple family, split on two axes:
+          blue-leaning (13, ♭13) against red-leaning (♭7, Δ7), and deep (13, ♭7)
+          against pale (♭13, Δ7).
+     Warm degrees darken and purple ones lighten, because a pale warm tone loses
+     its contrast against --highlight-bg. */
   --c-0:  #c8443f;
-  --c-1:  #cf858a;
+  --c-1:  #7a5029;
   --c-2:  #d38838;
-  --c-3:  #a67a3a;
+  --c-3:  #446223;
   --c-4:  #6b9838;
   --c-5:  #3d9a97;
   --c-6:  #7ab3ae;
   --c-7:  #3773bd;
-  --c-8:  #8574c0;
-  --c-9:  #bd5f8f;
-  --c-10: #9c5cbd;
-  --c-11: #a94040;
+  --c-8:  #a691ca;
+  --c-9:  #6c43b2;
+  --c-10: #a14d99;
+  --c-11: #c28ebe;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,18 +54,19 @@
     --input-border: #45423b;
     --accent: #d4995a;
     --accent-soft: rgba(212, 153, 90, 0.17);
+    --pick: #8f8b81;
     --c-0:  #e57672;
-    --c-1:  #d99ba0;
+    --c-1:  #b07f45;
     --c-2:  #e6a45c;
-    --c-3:  #d6a961;
+    --c-3:  #6d8f45;
     --c-4:  #9cc267;
     --c-5:  #6ec6c1;
     --c-6:  #98c9c4;
     --c-7:  #6ea6de;
-    --c-8:  #a99adb;
-    --c-9:  #d68eb2;
-    --c-10: #c48fdd;
-    --c-11: #d47878;
+    --c-8:  #c3b4ea;
+    --c-9:  #9b7ce6;
+    --c-10: #d888cf;
+    --c-11: #edbde6;
   }
 }
 :root[data-theme="light"] {
@@ -63,10 +76,11 @@
   --panel: #ffffff; --panel-border: #e6e1d5;
   --input-bg: #ffffff; --input-border: #d3cdc0;
   --accent: #b8763a; --accent-soft: rgba(184, 118, 58, 0.13);
-  --c-0:  #c8443f; --c-1:  #cf858a; --c-2:  #d38838;
-  --c-3:  #a67a3a; --c-4:  #6b9838; --c-5:  #3d9a97;
-  --c-6:  #7ab3ae; --c-7:  #3773bd; --c-8:  #8574c0;
-  --c-9:  #bd5f8f; --c-10: #9c5cbd; --c-11: #a94040;
+  --pick: #7d7a72;
+  --c-0:  #c8443f; --c-1:  #7a5029; --c-2:  #d38838;
+  --c-3:  #446223; --c-4:  #6b9838; --c-5:  #3d9a97;
+  --c-6:  #7ab3ae; --c-7:  #3773bd; --c-8:  #a691ca;
+  --c-9:  #6c43b2; --c-10: #a14d99; --c-11: #c28ebe;
 }
 :root[data-theme="dark"] {
   --bg: #1a1a17; --fg: #e8e5df; --muted: #7a766c;
@@ -75,10 +89,11 @@
   --panel: #232320; --panel-border: #3a3833;
   --input-bg: #201f1c; --input-border: #45423b;
   --accent: #d4995a; --accent-soft: rgba(212, 153, 90, 0.17);
-  --c-0:  #e57672; --c-1:  #d99ba0; --c-2:  #e6a45c;
-  --c-3:  #d6a961; --c-4:  #9cc267; --c-5:  #6ec6c1;
-  --c-6:  #98c9c4; --c-7:  #6ea6de; --c-8:  #a99adb;
-  --c-9:  #d68eb2; --c-10: #c48fdd; --c-11: #d47878;
+  --pick: #8f8b81;
+  --c-0:  #e57672; --c-1:  #b07f45; --c-2:  #e6a45c;
+  --c-3:  #6d8f45; --c-4:  #9cc267; --c-5:  #6ec6c1;
+  --c-6:  #98c9c4; --c-7:  #6ea6de; --c-8:  #c3b4ea;
+  --c-9:  #9b7ce6; --c-10: #d888cf; --c-11: #edbde6;
 }
 
 * { box-sizing: border-box; }
@@ -401,7 +416,7 @@ body {
   border-radius: 3px;
 }
 .note-cell.marked {
-  box-shadow: inset 0 0 0 2.5px var(--accent);
+  box-shadow: inset 0 0 0 2.5px var(--pick);
   opacity: 1;
   z-index: 2;
 }
@@ -443,6 +458,34 @@ body {
 .note-cell.wide-label {
   font-size: 11.5px;
   letter-spacing: -0.01em;
+}
+
+/* Guide tones: a dotted underline marks the third, a single dot the seventh.
+   Both are drawn by an absolutely positioned pseudo element so the label keeps
+   its exact size and position, and both sit right under the text with a halo in
+   the panel colour so they stay legible inside the pick frame. */
+.note-cell.guide-third > span::after,
+.note-cell.guide-seventh > span::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  height: 3px;
+  filter: drop-shadow(0 0 1.4px var(--panel)) drop-shadow(0 0 1.4px var(--panel));
+}
+.note-cell.guide-third > span::after {
+  left: 1px;
+  right: 1px;
+  background-image: radial-gradient(circle, currentColor 1.1px, transparent 1.35px);
+  background-size: 5px 3px;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+.note-cell.guide-seventh > span::after {
+  left: 50%;
+  margin-left: -1.5px;
+  width: 3px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .int-0  { color: var(--c-0); }
