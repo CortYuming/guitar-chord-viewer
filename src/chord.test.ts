@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parseChord, chordSummary, normalizeToASCII } from './chord';
+import {
+  parseChord,
+  chordSummary,
+  normalizeToASCII,
+  accidentalFor,
+  noteLabel,
+  degreeLabels,
+} from './chord';
 
 describe('parseChord', () => {
   it('parses simple major triad', () => {
@@ -341,5 +348,80 @@ describe('parseChord — Δ variants', () => {
     const a = parseChord('CmΔ7')!;
     const b = parseChord('CmM7')!;
     expect(a.tones).toEqual(b.tones);
+  });
+});
+
+describe('accidentalFor — circle of fifths', () => {
+  it('follows an explicit accidental in the root', () => {
+    expect(accidentalFor(parseChord('Bb13')!)).toBe('♭');
+    expect(accidentalFor(parseChord('Eb7')!)).toBe('♭');
+    expect(accidentalFor(parseChord('F#m7')!)).toBe('♯');
+    expect(accidentalFor(parseChord('C#7')!)).toBe('♯');
+  });
+
+  it('uses the major key signature for natural roots', () => {
+    expect(accidentalFor(parseChord('F7')!)).toBe('♭');
+    for (const c of ['C', 'G7', 'D9', 'A13', 'Emaj7', 'B7']) {
+      expect(accidentalFor(parseChord(c)!)).toBe('♯');
+    }
+  });
+
+  it('uses the relative minor key signature for minor chords', () => {
+    for (const c of ['Dm7', 'Gm', 'Cm9', 'Fm7']) {
+      expect(accidentalFor(parseChord(c)!)).toBe('♭');
+    }
+    for (const c of ['Am7', 'Em', 'Bm7b5']) {
+      expect(accidentalFor(parseChord(c)!)).toBe('♯');
+    }
+  });
+
+  it('treats augmented chords as major', () => {
+    expect(accidentalFor(parseChord('C+')!)).toBe('♯');
+  });
+});
+
+describe('degreeLabels', () => {
+  const DEFAULTS = ['R', '♭9', '9', '♭3', '3', '4', '♭5', '5', '♭6', '6', '♭7', 'Δ7'];
+
+  it('falls back to flat spellings with no chord', () => {
+    expect(degreeLabels(null)).toEqual(DEFAULTS);
+  });
+
+  it('uses no ASCII accidentals', () => {
+    for (const label of degreeLabels(parseChord('Cm7')!)) {
+      expect(label).not.toMatch(/[b#m]/);
+    }
+  });
+
+  it('keeps the defaults for a chord without altered tensions', () => {
+    expect(degreeLabels(parseChord('Cm7')!)).toEqual(DEFAULTS);
+  });
+
+  it('shows ♯9 for an altered ninth', () => {
+    expect(degreeLabels(parseChord('C7#9')!)[3]).toBe('♯9');
+  });
+
+  it('shows ♯5 for augmented chords', () => {
+    expect(degreeLabels(parseChord('Caug')!)[8]).toBe('♯5');
+  });
+
+  it('distinguishes ♭7 from Δ7', () => {
+    const labels = degreeLabels(parseChord('C7')!);
+    expect(labels[10]).toBe('♭7');
+    expect(labels[11]).toBe('Δ7');
+  });
+});
+
+describe('noteLabel', () => {
+  it('returns a single spelling per accidental', () => {
+    expect(noteLabel(10, '♭')).toBe('B♭');
+    expect(noteLabel(10, '♯')).toBe('A♯');
+    expect(noteLabel(0, '♭')).toBe('C');
+  });
+
+  it('spells chord tones with the chord accidental', () => {
+    expect(chordSummary(parseChord('Bb13')!).notes).toBe('B♭, C, D, E♭, F, G, A♭');
+    expect(chordSummary(parseChord('F7')!).notes).toBe('F, A, C, E♭');
+    expect(chordSummary(parseChord('D7')!).notes).toBe('D, F♯, A, C');
   });
 });

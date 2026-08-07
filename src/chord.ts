@@ -1,11 +1,4 @@
-export const CHROMATIC_LABELS = [
-  'R', 'b9', '9', 'm3', '3', '4', 'b5', '5', 'b6', '6', '7', 'Δ7',
-] as const;
-
-export const LEGEND_LABELS = [
-  'R', '1♯/2♭', '9', '2♯/3♭', '3', '4', '4♯/5♭', '5', '5♯/6♭', '6', '7♭', 'Δ7',
-] as const;
-
+// The single source of truth for degree names, used when no chord context applies.
 export const CONTEXTUAL_SUMMARY: Record<number, string> = {
   0: 'R', 1: '♭9', 2: '9', 3: '♭3', 4: '3', 5: '4',
   6: '♭5', 7: '5', 8: '♭6', 9: '6', 10: '♭7', 11: 'Δ7',
@@ -116,10 +109,26 @@ export function normalizeAliases(s: string): string {
     .replace(/\+(?!\d)/g, 'aug');
 }
 
-export function noteLabel(semi: number): string {
-  const s = NOTES_SHARP[semi];
-  const f = NOTES_FLAT[semi];
-  return s === f ? s : `${s}/${f}`;
+export type Accidental = '♯' | '♭';
+
+// Natural roots whose key signature is on the flat side of the circle of fifths.
+// Majors: F only (B♭). Minors: D, G, C, F (their relatives are F, B♭, E♭, A♭).
+const FLAT_NATURAL_MAJOR_ROOTS = new Set(['F']);
+const FLAT_NATURAL_MINOR_ROOTS = new Set(['D', 'G', 'C', 'F']);
+
+// Pick one accidental per chord, following the circle of fifths:
+// an explicit ♯/♭ in the root wins, otherwise the key signature decides.
+export function accidentalFor(chord: Chord): Accidental {
+  const sign = chord.rootLabel[1];
+  if (sign === 'b' || sign === '♭') return '♭';
+  if (sign === '#' || sign === '♯') return '♯';
+  const isMinor = chord.tones.includes(3) && !chord.tones.includes(4);
+  const flatRoots = isMinor ? FLAT_NATURAL_MINOR_ROOTS : FLAT_NATURAL_MAJOR_ROOTS;
+  return flatRoots.has(chord.rootLabel[0].toUpperCase()) ? '♭' : '♯';
+}
+
+export function noteLabel(semi: number, accidental: Accidental): string {
+  return accidental === '♭' ? NOTES_FLAT[semi] : NOTES_SHARP[semi];
 }
 
 function parseRoot(str: string): { semi: number; nextPos: number; label: string } | null {
@@ -196,11 +205,19 @@ export function contextualName(semi: number, chord: Chord): string {
   return CONTEXTUAL_SUMMARY[semi];
 }
 
+// Degree names for all 12 semitones, contextualized to the chord when there is one.
+export function degreeLabels(chord: Chord | null): string[] {
+  return Array.from({ length: 12 }, (_, semi) =>
+    chord ? contextualName(semi, chord) : CONTEXTUAL_SUMMARY[semi],
+  );
+}
+
 // Degree/note pairs in chord-tone order, so the UI can stack them in aligned columns.
 export function chordTonePairs(chord: Chord): { interval: string; note: string }[] {
+  const accidental = accidentalFor(chord);
   return chord.tones.map(t => ({
     interval: contextualName(t, chord),
-    note: NOTES_SHARP[(t + chord.root) % 12],
+    note: noteLabel((t + chord.root) % 12, accidental),
   }));
 }
 

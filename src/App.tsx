@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import {
-  LEGEND_LABELS,
+  degreeLabels,
   parseChord,
   chordTonePairs,
   normalizeToASCII,
@@ -60,6 +60,7 @@ function App() {
   });
 
   const tonePairs = chord ? chordTonePairs(chord) : null;
+  const legendLabels = useMemo(() => degreeLabels(chord), [chord]);
 
   const handleFrom = (v: number) => {
     setFromFret(v);
@@ -307,7 +308,7 @@ function App() {
 
       <div className="legend">
         <span className="legend-title">Degrees</span>
-        {LEGEND_LABELS.map((label, i) => (
+        {legendLabels.map((label, i) => (
           <span key={i} className={`legend-item int-${i}`}>
             {label}
           </span>

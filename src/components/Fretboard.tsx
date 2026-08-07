@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import type { Chord } from '../chord';
 import {
-  CHROMATIC_LABELS,
   OPEN_STRINGS,
   FRET_MARKERS,
+  accidentalFor,
+  contextualName,
   noteLabel,
 } from '../chord';
 import type { Markers } from '../hooks/useURLSync';
@@ -31,6 +32,7 @@ export function Fretboard({
   const to = Math.max(from, Math.min(22, toFret));
   const numCols = to - from + 1;
   const toneSet = useMemo(() => new Set(chord.tones), [chord.tones]);
+  const accidental = useMemo(() => accidentalFor(chord), [chord]);
 
   const MIN_CELL = 38;
   const MAX_CELL = 64;
@@ -59,7 +61,9 @@ export function Fretboard({
       const interval = (semi - chord.root + 12) % 12;
       const isChordTone = toneSet.has(interval);
       const label =
-        mode === 'number' ? CHROMATIC_LABELS[interval] : noteLabel(semi);
+        mode === 'number'
+          ? contextualName(interval, chord)
+          : noteLabel(semi, accidental);
       const isMarked = markers[s] === f;
       let cls = `cell note-cell int-${interval}`;
       if (f === 0) cls += ' open';
