@@ -3,6 +3,7 @@ import './App.css';
 import {
   degreeLabels,
   solfegeLabels,
+  guideTones,
   parseChord,
   chordTonePairs,
   normalizeToASCII,
@@ -89,6 +90,10 @@ function App() {
   const legendLabels = useMemo(
     () => (solfege ? solfegeLabels(chord) : degreeLabels(chord)),
     [chord, solfege],
+  );
+  const guides = useMemo(
+    () => (chord ? guideTones(chord) : { third: null, seventh: null }),
+    [chord],
   );
 
   const handleFrom = (v: number) => {
@@ -358,11 +363,16 @@ function App() {
             Solfege
           </button>
         </div>
-        {legendLabels.map((label, i) => (
-          <span key={i} className={`legend-item int-${i}`}>
-            {label}
-          </span>
-        ))}
+        {legendLabels.map((label, i) => {
+          let cls = `legend-item int-${i}`;
+          if (i === guides.third) cls += ' guide-third';
+          if (i === guides.seventh) cls += ' guide-seventh';
+          return (
+            <span key={i} className={cls}>
+              {label}
+            </span>
+          );
+        })}
       </div>
 
       <div className="footer-note">

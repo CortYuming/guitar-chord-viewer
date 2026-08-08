@@ -483,10 +483,17 @@ describe('guideTones', () => {
     expect(guidesOf('Dm7b5')).toEqual({ third: 3, seventh: 10 });
   });
 
+  it('marks the third of a plain triad and leaves it without a seventh', () => {
+    expect(guidesOf('C')).toEqual({ third: 4, seventh: null });
+    expect(guidesOf('Cm')).toEqual({ third: 3, seventh: null });
+    expect(guidesOf('Cdim')).toEqual({ third: 3, seventh: null });
+    expect(guidesOf('Caug')).toEqual({ third: 4, seventh: null });
+    expect(guidesOf('Cadd9')).toEqual({ third: 4, seventh: null });
+  });
+
   it('reports no third for sus chords and no seventh for triads and sixths', () => {
     expect(guidesOf('Csus4')).toEqual({ third: null, seventh: null });
     expect(guidesOf('C7sus4')).toEqual({ third: null, seventh: 10 });
-    expect(guidesOf('C')).toEqual({ third: 4, seventh: null });
     expect(guidesOf('C6')).toEqual({ third: 4, seventh: null });
     // A diminished seventh is spelled as a sixth interval, so it is not a
     // seventh here — the fretboard labels that degree 13 as well.
