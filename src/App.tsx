@@ -204,7 +204,10 @@ function App() {
   // Struck low string first, the way a downstroke crosses the strings. Index 5
   // is the low E, so the picks are read back to front.
   const handleStrum = () => {
-    if (!soundOn) return;
+    if (!audioAvailable) return;
+    // Pressing play is asking to hear something, so it turns the sound on
+    // rather than refusing.
+    if (!sound) setSound(true);
     const positions: { stringIdx: number; fret: number }[] = [];
     for (let s = markers.length - 1; s >= 0; s--) {
       const fret = markers[s];
@@ -375,13 +378,13 @@ function App() {
                 <button
                   className="sound-play"
                   onClick={handleStrum}
-                  disabled={!soundOn || !hasAnyMarker}
+                  disabled={!hasAnyMarker}
                   title={
-                    !soundOn
-                      ? 'The sound is off'
-                      : hasAnyMarker
+                    !hasAnyMarker
+                      ? 'Nothing is picked yet'
+                      : soundOn
                         ? 'Play the picked notes'
-                        : 'Nothing is picked yet'
+                        : 'Turn the sound on and play the picked notes'
                   }
                   type="button"
                 >
