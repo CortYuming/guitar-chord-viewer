@@ -9,6 +9,7 @@ import {
   normalizeToASCII,
 } from './chord';
 import { Fretboard } from './components/Fretboard';
+import { isAudioSupported, playFret, strum } from './audio';
 import {
   readURLState,
   useURLSync,
@@ -23,6 +24,31 @@ import { useMRU } from './hooks/useMRU';
 // Number of most-recent history items kept pinned (no remove button, never
 // bulk-deleted via Shift+Click).
 const MRU_PINNED_COUNT = 5;
+
+// Drawn rather than taken from the emoji set, so it inherits the text colour:
+// the switch has to read as grey when the sound is off and as the accent colour
+// when it is on, and an emoji keeps its own colours whatever we ask of it.
+function SpeakerIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+      <path d="M8.2 2.6 4.8 5.4H2.1v5.2h2.7l3.4 2.8z" fill="currentColor" />
+      <path
+        d="M10.6 5.6a3.4 3.4 0 0 1 0 4.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12.6 3.6a6.2 6.2 0 0 1 0 8.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function App() {
   const urlState = useRef(readURLState()).current;
@@ -42,6 +68,11 @@ function App() {
   const [copyMdLabel, setCopyMdLabel] = useState('📝 MD');
 
   const { mru, push: pushMRU, remove: removeMRU, clear: clearMRU, trimTo: trimMRU } = useMRU();
+  // Deliberately not remembered: every visit starts silent, so a shared link
+  // never makes a noise at someone unprepared for it.
+  const [sound, setSound] = useState(false);
+  const audioAvailable = useRef(isAudioSupported()).current;
+  const soundOn = audioAvailable && sound;
 
   const chord = useMemo(() => parseChord(input), [input]);
 
@@ -151,7 +182,16 @@ function App() {
     if (chord) pushMRU(chord.label);
   };
 
-  const handleMarkerToggle = (stringIdx: number, fret: number) => {
+  // The sound switch decides what a click is for, and each mode does one thing
+  // only. With the sound on, every click sounds its position and leaves the
+  // picks alone; letting it toggle as well would mean clicking a picked cell
+  // silently — the same gesture sounding or not depending on what was there.
+  // With the sound off, a click picks or unpicks, silently.
+  const handleCellClick = (stringIdx: number, fret: number) => {
+    if (soundOn) {
+      playFret(stringIdx, fret);
+      return;
+    }
     setMarkers((prev) => {
       const next = [...prev];
       next[stringIdx] = prev[stringIdx] === fret ? null : fret;
@@ -160,6 +200,18 @@ function App() {
   };
 
   const handleClearMarkers = () => setMarkers([...EMPTY_MARKERS]);
+
+  // Struck low string first, the way a downstroke crosses the strings. Index 5
+  // is the low E, so the picks are read back to front.
+  const handleStrum = () => {
+    if (!soundOn) return;
+    const positions: { stringIdx: number; fret: number }[] = [];
+    for (let s = markers.length - 1; s >= 0; s--) {
+      const fret = markers[s];
+      if (fret !== null) positions.push({ stringIdx: s, fret });
+    }
+    strum(positions);
+  };
 
   const hasAnyMarker = markers.some((m) => m !== null);
 
@@ -307,8 +359,37 @@ function App() {
 
       {chord && (
         <>
-          {hasAnyMarker && (
-            <div className="fretboard-header">
+          <div className="fretboard-header">
+            {audioAvailable && (
+              <span className={'sound-group' + (sound ? ' on' : '')}>
+                <button
+                  className="sound-switch"
+                  onClick={() => setSound((v) => !v)}
+                  aria-pressed={sound}
+                  aria-label={sound ? 'Turn the sound off' : 'Turn the sound on'}
+                  title={sound ? 'Turn the sound off' : 'Turn the sound on'}
+                  type="button"
+                >
+                  <SpeakerIcon />
+                </button>
+                <button
+                  className="sound-play"
+                  onClick={handleStrum}
+                  disabled={!soundOn || !hasAnyMarker}
+                  title={
+                    !soundOn
+                      ? 'The sound is off'
+                      : hasAnyMarker
+                        ? 'Play the picked notes'
+                        : 'Nothing is picked yet'
+                  }
+                  type="button"
+                >
+                  ▶ Strum
+                </button>
+              </span>
+            )}
+            {hasAnyMarker && (
               <button
                 className="picks-clear"
                 onClick={handleClearMarkers}
@@ -317,8 +398,8 @@ function App() {
               >
                 Clear picks
               </button>
-            </div>
-          )}
+            )}
+          </div>
           <div className="fretboard-wrap">
             <Fretboard
               chord={chord}
@@ -326,7 +407,7 @@ function App() {
               fromFret={fromFret}
               toFret={toFret}
               markers={markers}
-              onMarkerToggle={handleMarkerToggle}
+              onCellClick={handleCellClick}
             />
           </div>
           <div className="fretboard-wrap">
@@ -336,7 +417,7 @@ function App() {
               fromFret={fromFret}
               toFret={toFret}
               markers={markers}
-              onMarkerToggle={handleMarkerToggle}
+              onCellClick={handleCellClick}
             />
           </div>
         </>
@@ -377,7 +458,7 @@ function App() {
 
       <div className="footer-note">
         <div>
-          Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove.
+          Click any cell to mark a fingering; use <span className="picks-clear-inline">Clear picks</span> to remove. Switch the sound on to hear each cell as you click it, and <span className="picks-clear-inline">▶ Strum</span> to play the marked ones as a chord.
         </div>
         <div>
           In history, click <span className="picks-clear-inline">×</span> to remove one item; Shift+Click to remove all but the {MRU_PINNED_COUNT} most recent.

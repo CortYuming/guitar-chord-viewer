@@ -19,7 +19,9 @@ interface Props {
   fromFret: number;
   toFret: number;
   markers: Markers;
-  onMarkerToggle: (stringIdx: number, fret: number) => void;
+  // What a click does depends on the sound switch — it either picks the
+  // position or sounds it — so the cell only reports that it was clicked.
+  onCellClick: (stringIdx: number, fret: number) => void;
 }
 
 export function Fretboard({
@@ -28,7 +30,7 @@ export function Fretboard({
   fromFret,
   toFret,
   markers,
-  onMarkerToggle,
+  onCellClick,
 }: Props) {
   const from = Math.max(0, Math.min(22, fromFret));
   const to = Math.max(from, Math.min(22, toFret));
@@ -87,11 +89,11 @@ export function Fretboard({
           tabIndex={0}
           aria-pressed={isMarked}
           aria-label={`String ${s + 1}, fret ${f}, ${label}${isMarked ? ', marked' : ''}`}
-          onClick={() => onMarkerToggle(s, f)}
+          onClick={() => onCellClick(s, f)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              onMarkerToggle(s, f);
+              onCellClick(s, f);
             }
           }}
         >

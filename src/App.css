@@ -514,6 +514,46 @@ body {
   margin-bottom: 6px;
   padding: 0 2px;
 }
+/* The switch and the play button are one joined control: the speaker decides
+   whether anything makes a noise at all, so the pair goes grey together. A
+   live-looking play button beside an off switch would be a lie. */
+.sound-group {
+  margin-left: auto;
+  display: inline-flex;
+}
+.sound-group button {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.12s, border-color 0.12s, background 0.12s, opacity 0.12s;
+}
+.sound-switch {
+  border-radius: 999px 0 0 999px;
+  border-right: none;
+  padding: 4px 10px;
+}
+.sound-switch:hover { border-color: var(--accent); color: var(--accent); }
+.sound-switch:focus-visible,
+.sound-play:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sound-group svg { display: block; }
+.sound-play {
+  border-radius: 0 999px 999px 0;
+}
+.sound-play:disabled { opacity: 0.5; cursor: default; }
+.sound-group.on button { border-color: var(--accent); color: var(--accent); }
+.sound-group.on .sound-switch { background: var(--accent-soft); }
+.sound-group.on .sound-play:not(:disabled):hover { background: var(--accent-soft); }
+/* The sound group has already pushed the row to the right edge. */
+.sound-group + .picks-clear { margin-left: 12px; }
+
 .picks-clear {
   margin-left: auto;
   padding: 4px 10px;
