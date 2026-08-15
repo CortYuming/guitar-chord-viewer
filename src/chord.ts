@@ -229,22 +229,39 @@ export function guideTones(chord: Chord): {
   };
 }
 
+// Semitone 8 is the one degree the summary cannot settle by itself: it is the
+// altered fifth of a dominant (♯5) and the borrowed sixth of everything else
+// (♭6), and the two are the same pitch. A dominant is read off the tones — a
+// ♭7 with no minor third — rather than the quality string, so 7 / 9 / 13 and
+// the sus dominants are all caught by one test. aug and alt declare the note
+// as a ♯5 tension and are answered before this ever runs.
+const SHARP_FIVE_SEMI = 8;
+
+function prefersSharpFive(chord: Chord): boolean {
+  return chord.tones.includes(10) && !chord.tones.includes(3);
+}
+
 export function contextualName(semi: number, chord: Chord): string {
   for (const t of chord.tensions) {
     if (t.adjusted === semi) return `${t.sign}${t.n}`;
   }
+  if (semi === SHARP_FIVE_SEMI && prefersSharpFive(chord)) return '♯5';
   return CONTEXTUAL_SUMMARY[semi];
 }
 
-// Solfege counterpart of contextualName, so the two labellings always agree.
-// The flat row is the default because CONTEXTUAL_SUMMARY spells unaltered
-// degrees with flats (♭3, ♭7, ...). An altered tension carries its own sign,
-// so ♯9 reads 'ri', not 'mo'.
+// Solfege counterpart of contextualName, so the two labellings always agree —
+// including the dominant's ♯5, which has to read 'si' here or the two rows
+// would disagree about the same dot. The flat row is otherwise the default,
+// because CONTEXTUAL_SUMMARY spells unaltered degrees with flats (♭3, ♭7, ...).
+// An altered tension carries its own sign, so ♯9 reads 'ri', not 'mo'.
 export function solfegeName(semi: number, chord: Chord): string {
   for (const t of chord.tensions) {
     if (t.adjusted === semi) {
       return t.sign === '♯' ? SOLFEGE_SHARP[semi] : SOLFEGE_FLAT[semi];
     }
+  }
+  if (semi === SHARP_FIVE_SEMI && prefersSharpFive(chord)) {
+    return SOLFEGE_SHARP[semi];
   }
   return SOLFEGE_FLAT[semi];
 }

@@ -418,6 +418,18 @@ describe('degreeLabels', () => {
     expect(labels[10]).toBe('♭7');
     expect(labels[11]).toBe('Δ7');
   });
+
+  it('reads the 8th semitone as ♯5 over a dominant', () => {
+    expect(degreeLabels(parseChord('C7')!)[8]).toBe('♯5');
+    expect(degreeLabels(parseChord('C13')!)[8]).toBe('♯5');
+    expect(degreeLabels(parseChord('C7sus4')!)[8]).toBe('♯5');
+  });
+
+  it('keeps ♭6 where the chord is not dominant', () => {
+    expect(degreeLabels(parseChord('Cm7')!)[8]).toBe('♭6');
+    expect(degreeLabels(parseChord('CM7')!)[8]).toBe('♭6');
+    expect(degreeLabels(parseChord('Cm7b5')!)[8]).toBe('♭6');
+  });
 });
 
 describe('solfege', () => {
@@ -457,6 +469,21 @@ describe('solfege', () => {
     const labels = solfegeLabels(parseChord('C7#9')!);
     expect(labels[3]).toBe('ri');
     expect(labels[10]).toBe('to');
+  });
+
+  it('reads the 8th semitone as si over a dominant, lo elsewhere', () => {
+    expect(solfegeLabels(parseChord('C7')!)[8]).toBe('si');
+    expect(solfegeLabels(parseChord('C7sus4')!)[8]).toBe('si');
+    expect(solfegeLabels(parseChord('Cm7')!)[8]).toBe('lo');
+    expect(solfegeLabels(parseChord('CM7')!)[8]).toBe('lo');
+  });
+
+  it('never disagrees with the degree labels about the 8th semitone', () => {
+    for (const name of ['C7', 'C13', 'C7sus4', 'Cm7', 'CM7', 'Caug', 'C7alt']) {
+      const chord = parseChord(name)!;
+      const sharp = degreeLabels(chord)[8].startsWith('♯');
+      expect(solfegeLabels(chord)[8]).toBe(sharp ? 'si' : 'lo');
+    }
   });
 });
 
